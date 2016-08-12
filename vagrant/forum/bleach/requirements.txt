@@ -1,0 +1,14 @@
+ordereddict
+six
+html5lib>=0.999,<0.99999999
+
+# Requirements to run the test suite:
+nose
+flake8
+tox
+
+# Requirements for building docs
+Sphinx
+
+# Requirements for updating package
+twine
