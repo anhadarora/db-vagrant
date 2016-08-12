@@ -1,8 +1,5 @@
 NOTE:
-LOST ALL PREVIOUS COMMITS :/
-Messed up git and had to do a 'git push -f origin master'...
-That erased all commit history :/
-Oh, well...
+Starting over, will try implementing multiple tournaments
 
 
 - FIX CODE WITH PEP8
