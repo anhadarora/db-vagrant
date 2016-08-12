@@ -1,3 +1,10 @@
+NOTE:
+LOST ALL PREVIOUS COMMITS :/
+Messed up git and had to do a 'git push -f origin master'...
+That erased all commit history :/
+Oh, well...
+
+
 - FIX CODE WITH PEP8
 done, installed autopep8 on sublime too, cool
 
