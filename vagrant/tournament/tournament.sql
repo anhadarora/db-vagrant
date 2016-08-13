@@ -27,13 +27,13 @@ CREATE TABLE matches(
 	loser int references players(id)
 );
 
-insert into players (name) values ('Player 1 da Silva');
-insert into players (name) values ('Player 2 o Segundo');
-insert into players (name) values ('Player 3 o Terceiro');
-insert into players (name) values ('Player 4 o Quarto');
+-- insert into players (name) values ('Player 1 da Silva');
+-- insert into players (name) values ('Player 2 o Segundo');
+-- insert into players (name) values ('Player 3 o Terceiro');
+-- insert into players (name) values ('Player 4 o Quarto');
 
-insert into matches (winner, loser) values (1,2);
-insert into matches (winner, loser) values (3,4);
+-- insert into matches (winner, loser) values (1,2);
+-- insert into matches (winner, loser) values (3,4);
 
 -- create matches_ids view
 create view matches_ids as select matches.id, matches.winner as winner, matches.loser as loser from matches, players where matches.winner = players.id or matches.loser = players.id group by matches.id order by matches.id;

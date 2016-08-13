@@ -1,18 +1,6 @@
 NOTE:
 Starting over, will try implementing multiple tournaments
 
-
-- FIX CODE WITH PEP8
-done, installed autopep8 on sublime too, cool
-
-- IMPROVE README
-
-- REFACTOR connecting to db code repetition
-done
-
-- USE fetchone() instead of fetchall[0][0]
-done
-
 - Support more than one tournament in the database, so matches do not have to be deleted between tournaments. This will require distinguishing between “a registered player” and “a player who has entered in tournament #123”, so it will require changes to the database schema.
 
 - Prevent rematches between players.
