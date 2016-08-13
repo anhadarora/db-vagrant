@@ -44,7 +44,7 @@ def registerPlayer(name, tournament):
     return '*** all player records deleted from database ***'
 
 
-def playerStandings(tournament='1'):
+def playerStandings(tournament):
     """Returns a list of the players and their win records, sorted by wins,
     	filtered by tournament.
 
@@ -65,7 +65,7 @@ def playerStandings(tournament='1'):
     return results
 
 
-def swissPairings(tournament=1):
+def swissPairings(tournament):
     """Returns a list of pairs of players for the next round of a match.
 
     Assuming that there are an even number of players registered, each player
