@@ -5,11 +5,38 @@
 
 from tournament import *
 
+def deleteMatches(tournament):
+    """Remove all the match records from the database."""
+
+    db, cursor = connect()
+    cursor.execute("delete from matches where tournament=%s;", (tournament,))
+    db.commit()
+    db.close()
+    return 'deleted all match records from database'
+
+
+def deletePlayers(tournament):
+    """Remove all the player records from the database."""
+    db, cursor = connect()
+    cursor.execute("delete from players where tournament=%s;", (tournament,))
+    db.commit()
+    db.close()
+    return 'deleted all player records from database'
+
+
+def countPlayers(tournament):
+    """Returns the number of players currently registered."""
+    db, cursor = connect()
+    cursor.execute("select count(id) from players where tournament=%s;", (tournament,))
+    results = cursor.fetchone()
+    db.close()
+    return results[0]
+
 def deleteTournaments():
     """Remove all the tournament records from the database."""
 
     db, cursor = connect()
-    cursor.execute("delete from tournaments;")
+    cursor.execute("delete from tournaments where tournament=%s;", (tournament,))
     db.commit()
     db.close()
     return 'deleted all match records from database'
@@ -42,6 +69,20 @@ def registerPlayer(name, tournament):
     db.commit()
     db.close()
     return '*** all player records deleted from database ***'
+
+def reportMatch(winner, loser, tournament):
+    """Records the outcome of a single match between two players.
+
+    Args:
+      winner:  the id number of the player who won
+      loser:  the id number of the player who lost
+    """
+    db, cursor = connect()
+    cursor.execute(
+        "insert into matches (winner, loser, tournament) values (%s, %s, %s)", (winner, loser, tournament))
+    db.commit()
+    db.close()
+    return '*** match recorded ***'
 
 
 def playerStandings(tournament):

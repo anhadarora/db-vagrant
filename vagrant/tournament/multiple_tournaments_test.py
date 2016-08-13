@@ -9,6 +9,9 @@
 from multiple_tournaments import *
 
 DEFAULT_TOURNAMENT = 2
+createTournament()
+createTournament()
+
 
 def testCount():
     """
@@ -16,9 +19,9 @@ def testCount():
              player count after 1 and 2 players registered,
              player count after players deleted.
     """
-    deleteMatches()
-    deletePlayers()
-    c = countPlayers()
+    deleteMatches(DEFAULT_TOURNAMENT)
+    deletePlayers(DEFAULT_TOURNAMENT)
+    c = countPlayers(DEFAULT_TOURNAMENT)
     if c == '0':
         raise TypeError(
             "countPlayers should return numeric zero, not string '0'.")
@@ -26,23 +29,20 @@ def testCount():
         raise ValueError("After deletion, countPlayers should return zero.")
     print "1. countPlayers() returns 0 after initial deletePlayers() execution."
 
-    createTournament()
-    createTournament()
-
-    registerPlayer("Chandra Nalaar", 1)
-    c = countPlayers()
+    registerPlayer("Chandra Nalaar", DEFAULT_TOURNAMENT)
+    c = countPlayers(DEFAULT_TOURNAMENT)
     if c != 1:
         raise ValueError(
             "After one player registers, countPlayers() should be 1. Got {c}".format(c=c))
     print "2. countPlayers() returns 1 after one player is registered."
-    registerPlayer("Jace Beleren", 1)
-    c = countPlayers()
+    registerPlayer("Jace Beleren", DEFAULT_TOURNAMENT)
+    c = countPlayers(DEFAULT_TOURNAMENT)
     if c != 2:
         raise ValueError(
             "After two players register, countPlayers() should be 2. Got {c}".format(c=c))
     print "3. countPlayers() returns 2 after two players are registered."
-    deletePlayers()
-    c = countPlayers()
+    deletePlayers(DEFAULT_TOURNAMENT)
+    c = countPlayers(DEFAULT_TOURNAMENT)
     if c != 0:
         raise ValueError(
             "After deletion, countPlayers should return zero.")
@@ -53,8 +53,8 @@ def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
     Test to ensure players are properly represented in standings prior
     to any matches being reported.
     """
-    deleteMatches()
-    deletePlayers()
+    deleteMatches(DEFAULT_TOURNAMENT)
+    deletePlayers(DEFAULT_TOURNAMENT)
     registerPlayer("Melpomene Murray", tournament)
     registerPlayer("Randy Schwartz", tournament)
     # playerstandings(tournament)
@@ -82,16 +82,16 @@ def testReportMatches(tournament=DEFAULT_TOURNAMENT):
     Test that matches are reported properly.
     Test to confirm matches are deleted properly.
     """
-    deleteMatches()
-    deletePlayers()
+    deleteMatches(tournament)
+    deletePlayers(tournament)
     registerPlayer("Bruno Walton", tournament)
     registerPlayer("Boots O'Neal", tournament)
     registerPlayer("Cathy Burton", tournament)
     registerPlayer("Diane Grant", tournament)
     standings = playerStandings(tournament)
     [id1, id2, id3, id4] = [row[1] for row in standings]
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
+    reportMatch(id1, id2, tournament)
+    reportMatch(id3, id4, tournament)
     standings = playerStandings(tournament)
     for (t, i, n, w, m) in standings:
         if m != 1:
@@ -101,7 +101,7 @@ def testReportMatches(tournament=DEFAULT_TOURNAMENT):
         elif i in (id2, id4) and w != 0:
             raise ValueError("Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
-    deleteMatches()
+    deleteMatches(tournament)
     standings = playerStandings(tournament)
     if len(standings) != 4:
         raise ValueError("Match deletion should not change number of players in standings.")
@@ -116,8 +116,8 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     """
     Test that pairings are generated properly both before and after match reporting.
     """
-    deleteMatches()
-    deletePlayers()
+    deleteMatches(tournament)
+    deletePlayers(tournament)
     registerPlayer("Twilight Sparkle", tournament)
     registerPlayer("Fluttershy", tournament)
     registerPlayer("Applejack", tournament)
@@ -132,10 +132,10 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     if len(pairings) != 4:
         raise ValueError(
             "For eight players, swissPairings should return 4 pairs. Got {pairs}".format(pairs=len(pairings)))
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
-    reportMatch(id5, id6)
-    reportMatch(id7, id8)
+    reportMatch(id1, id2, tournament)
+    reportMatch(id3, id4, tournament)
+    reportMatch(id5, id6, tournament)
+    reportMatch(id7, id8, tournament)
     pairings = swissPairings(tournament)
     if len(pairings) != 4:
         raise ValueError(
