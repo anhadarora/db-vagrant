@@ -4,9 +4,10 @@
 #
 
 from tournament import *
+import random
 
 def deleteMatches(tournament):
-    """Remove all the match records from the database."""
+    """Remove all the match records from a particular tournament."""
 
     db, cursor = connect()
     cursor.execute("delete from matches where tournament=%s;", (tournament,))
@@ -16,7 +17,7 @@ def deleteMatches(tournament):
 
 
 def deletePlayers(tournament):
-    """Remove all the player records from the database."""
+    """Remove all the player records from a particular tournament."""
     db, cursor = connect()
     cursor.execute("delete from players where tournament=%s;", (tournament,))
     db.commit()
@@ -25,7 +26,7 @@ def deletePlayers(tournament):
 
 
 def countPlayers(tournament):
-    """Returns the number of players currently registered."""
+    """Returns the number of players currently registered in a tournament."""
     db, cursor = connect()
     cursor.execute("select count(id) from players where tournament=%s;", (tournament,))
     results = cursor.fetchone()
@@ -56,7 +57,7 @@ def createTournament(name='No Name'):
 
 
 def registerPlayer(name, tournament):
-    """Adds a player to the tournament database.
+    """Adds a player a tournament.
 
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
@@ -76,6 +77,7 @@ def reportMatch(winner, loser, tournament):
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
+      tournament: the id of the tournament this match belongs to
     """
     db, cursor = connect()
     cursor.execute(
@@ -94,6 +96,7 @@ def playerStandings(tournament):
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
+        tournament: the id of the tournament
         id: the player's unique id (assigned by the database)
         name: the player's full name (as registered)
         wins: the number of matches the player has won
@@ -107,7 +110,8 @@ def playerStandings(tournament):
 
 
 def swissPairings(tournament):
-    """Returns a list of pairs of players for the next round of a match.
+    """Returns a list of pairs of players for the next round of a match
+    in a particular tournament.
 
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
@@ -126,14 +130,60 @@ def swissPairings(tournament):
     results = cursor.fetchall()
     db.close()
 
+    print "AQUI"
+    print len(results)
+
     matches = []
     count = 0
-    while (count < len(results)):
-        matches.append(
-            (results[count][1], results[count][2],
-             results[count+1][1], results[count+1][2]))
-        count = count + 2
 
-    print matches
+    # If number of players is odd, must give a 'bye' to one player.
+    # A player should not receive more than one 'bye' in a tournament.
+    # A bye counts as a free win.
+    if len(results) % 2 == 0:
+        while (count < len(results)):
+            matches.append(
+                # result[][0] is id
+                # result[][2] is name
+                (results[count][0], results[count][2],
+                 results[count+1][0], results[count+1][2]))
+            count = count + 2
+    else:
+        # need to calculate the top half
+        # randomly select a winner from bottom half
+        # can't be someone who's won a bye before
+        print "ODD NUMBER OF PLAYERS. WILL RANDOM SELECT ONE FROM BOTTOM HALF."
+
+        bottom_half = [result for result in results[:len(results)/2]]
+        bye_winner = random.choice(bottom_half)
+        # check if player has not received a bye
+        # if it has received a bye, pick another player
+
+        print "BYES"
+        print bye_winner
+        print bye_winner[5]
+
+        # if player has a bye, pick another
+        while (bye_winner[5] != None):
+             bye_winner = random.choice(bottom_half)
+
+        #insert bye record for player
+        db, cursor = connect()
+        cursor.execute(
+            "update players set bye=True where id=%s", (str(bye_winner[0]),))
+        db.commit()
+        db.close()
+
+        # set up matches, excluding bye'd player
+
+        # exclude from list bye'd player
+        # same sorting as above line 143
+
+        matches = ['I', 'DON\'T', 'KNOW']
+        print "PLAYERS and WINS"
+        for player in results:
+            print player
+        #ord
+
+
     return matches
 

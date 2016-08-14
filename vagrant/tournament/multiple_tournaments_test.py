@@ -1,16 +1,29 @@
 #!/usr/bin/env python
 #
-# Test cases for tournament.py
+# Test cases for multiple_tournaments.py
 # These tests are not exhaustive, but they should cover the majority of cases.
 #
 # If you do add any of the extra credit options, be sure to add/modify these test cases
 # as appropriate to account for your module's added functionality.
+#
+# OBS: I'm trying to implement multiple tournaments by overriding(?) all tournament functions
+# to operate on an unique tournament id
 
 from multiple_tournaments import *
 
-DEFAULT_TOURNAMENT = 2
-createTournament()
-createTournament()
+# The Tournament we will perform tests on
+DEFAULT_TOURNAMENT = 5
+
+def createTournamentsForTesting(DEFAULT_TOURNAMENT):
+    db, cursor = connect()
+    cursor.execute("select count(*) from tournaments;")
+    num_tournaments = cursor.fetchone()[0]
+
+    while(DEFAULT_TOURNAMENT >= int(num_tournaments)):
+        createTournament()
+        num_tournaments += 1
+    db.close()
+    return
 
 
 def testCount():
@@ -66,9 +79,9 @@ def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
         raise ValueError("Only registered players should appear in standings.")
     # if len(standings[0]) != 4:
     #     raise ValueError("Each playerStandings row should have four columns.")
-    if len(standings[0]) != 5:
-        raise ValueError("Each playerStandings row should have five columns.")
-    [(tournament, id1, name1, wins1, matches1), (tournament, id2, name2, wins2, matches2)] = standings
+    if len(standings[0]) != 6:
+        raise ValueError("Each playerStandings row should have six columns.")
+    [(tournament, id1, name1, wins1, matches1, bye), (tournament, id2, name2, wins2, matches2, bye)] = standings
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
@@ -89,11 +102,11 @@ def testReportMatches(tournament=DEFAULT_TOURNAMENT):
     registerPlayer("Cathy Burton", tournament)
     registerPlayer("Diane Grant", tournament)
     standings = playerStandings(tournament)
-    [id1, id2, id3, id4] = [row[1] for row in standings]
+    [id1, id2, id3, id4] = [row[0] for row in standings]
     reportMatch(id1, id2, tournament)
     reportMatch(id3, id4, tournament)
     standings = playerStandings(tournament)
-    for (t, i, n, w, m) in standings:
+    for (i, t, n, w, m, b) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
         if i in (id1, id3) and w != 1:
@@ -105,7 +118,7 @@ def testReportMatches(tournament=DEFAULT_TOURNAMENT):
     standings = playerStandings(tournament)
     if len(standings) != 4:
         raise ValueError("Match deletion should not change number of players in standings.")
-    for (t, i, n, w, m) in standings:
+    for (i, t, n, w, m, b) in standings:
         if m != 0:
             raise ValueError("After deleting matches, players should have zero matches recorded.")
         if w != 0:
@@ -127,7 +140,7 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     registerPlayer("Princess Celestia", tournament)
     registerPlayer("Princess Luna", tournament)
     standings = playerStandings(tournament)
-    [id1, id2, id3, id4, id5, id6, id7, id8] = [row[1] for row in standings]
+    [id1, id2, id3, id4, id5, id6, id7, id8] = [row[0] for row in standings]
     pairings = swissPairings(tournament)
     if len(pairings) != 4:
         raise ValueError(
@@ -154,9 +167,33 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
             raise ValueError(
                 "After one match, players with one win should be paired.")
     print "10. After one match, players with one win are properly paired."
+    # start testing for multiple_tournaments
+    deleteMatches(tournament)
+    registerPlayer("King Trololo", tournament)
+    standings = playerStandings(tournament)
+    print 'length of standings: %d' % len(standings)
+    if len(standings) != 9:
+        raise ValueError(
+            "After adding new player, there should be 9 players in"
+            " tournament. Got {standings}".format(standings=len(standings)))
+
+    [id1, id2, id3, id4, id5, id6, id7, id8, id9] = [row[0] for row in standings]
+    reportMatch(id1, id2, tournament)
+    reportMatch(id3, id4, tournament)
+    reportMatch(id5, id6, tournament)
+    reportMatch(id7, id8, tournament)
+    pairings = swissPairings(tournament)
+    if len(pairings) != 4:
+        raise ValueError(
+            "For nine players, swissPairings should return 4 pairs. Got {pairs}".format(pairs=len(pairings)))
+
+
+
+
 
 
 if __name__ == '__main__':
+    createTournamentsForTesting(DEFAULT_TOURNAMENT)
     testCount()
     testStandingsBeforeMatches()
     testReportMatches()
