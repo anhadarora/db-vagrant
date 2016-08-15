@@ -6,6 +6,7 @@
 from tournament import *
 import random
 
+
 def deleteMatches(tournament):
     """Remove all the match records from a particular tournament."""
 
@@ -28,16 +29,19 @@ def deletePlayers(tournament):
 def countPlayers(tournament):
     """Returns the number of players currently registered in a tournament."""
     db, cursor = connect()
-    cursor.execute("select count(id) from players where tournament=%s;", (tournament,))
+    cursor.execute(
+        "select count(id) from players where tournament=%s;", (tournament,))
     results = cursor.fetchone()
     db.close()
     return results[0]
+
 
 def deleteTournaments():
     """Remove all the tournament records from the database."""
 
     db, cursor = connect()
-    cursor.execute("delete from tournaments where tournament=%s;", (tournament,))
+    cursor.execute(
+        "delete from tournaments where tournament=%s;", (tournament,))
     db.commit()
     db.close()
     return 'deleted all match records from database'
@@ -66,10 +70,12 @@ def registerPlayer(name, tournament):
       name: the player's full name (need not be unique).
     """
     db, cursor = connect()
-    cursor.execute("insert into players (name, tournament) values (%s, %s)", (name, tournament))
+    cursor.execute(
+        "insert into players (name, tournament) values (%s, %s)", (name, tournament))
     db.commit()
     db.close()
     return '*** all player records deleted from database ***'
+
 
 def reportMatch(winner, loser, tournament):
     """Records the outcome of a single match between two players.
@@ -103,7 +109,8 @@ def playerStandings(tournament):
         matches: the number of matches the player has played
     """
     db, cursor = connect()
-    cursor.execute("select * from players_standings where tournament=(%s)", (tournament,))
+    cursor.execute(
+        "select * from players_standings where tournament=(%s)", (tournament,))
     results = cursor.fetchall()
     db.close()
     return results
@@ -129,24 +136,24 @@ def swissPairings(tournament):
         name2: the second player's name
     """
     db, cursor = connect()
-    cursor.execute("select * from players_standings where tournament=%s;", (tournament,))
+    cursor.execute(
+        "select * from players_standings where tournament=%s;", (tournament,))
     results = cursor.fetchall()
     db.close()
-
-    matches = []
-    count = 0
 
     # If number of players is odd, must give a 'bye' to one player.
     # A player should not receive more than one 'bye' in a tournament.
     # A bye counts as a free win.
+    matches = []
     if len(results) % 2 == 0:
-        while (count < len(results)):
-            matches.append(
-                # result[][0] is id
-                # result[][2] is name
-                (results[count][0], results[count][2],
-                 results[count+1][0], results[count+1][2]))
-            count = count + 2
+        matches = setMatchesPairs(results, tournament)
+        # while (count < len(results)):
+        #     matches.append(
+        #         # result[][0] is id
+        #         # result[][2] is name
+        #         (results[count][0], results[count][2],
+        #          results[count+1][0], results[count+1][2]))
+        #     count = count + 2
     else:
         # need to calculate the top half
         # randomly select a winner from bottom half
@@ -160,7 +167,7 @@ def swissPairings(tournament):
         while (bye_winner[5] != None):
             bye_winner = random.choice(bottom_half)
 
-        #insert bye record for player
+        # insert bye record for player
         updatePlayerBye(str(bye_winner[0]), True)
         # db, cursor = connect()
         # cursor.execute(
@@ -175,19 +182,13 @@ def swissPairings(tournament):
             if player[0] != bye_winner[0]:
                 remaining_players.append(player)
 
-        # same sorting as above line 143, maybe refactor
-        while (count < len(remaining_players)):
-            matches.append(
-                # result[][0] is id
-                # result[][2] is name
-                (remaining_players[count][0], remaining_players[count][2],
-                 remaining_players[count+1][0], remaining_players[count+1][2]))
-            count = count + 2
+        matches = setMatchesPairs(remaining_players, tournament)
 
     return matches
 
+
 def updatePlayerBye(id, set=True):
-    #insert bye record for player
+    # insert bye record for player
     db, cursor = connect()
     if id and set == True:
         print 'giving player %s a bye.' % str(id)
@@ -197,4 +198,74 @@ def updatePlayerBye(id, set=True):
         db.close()
 
     return
+
+
+def setMatchesPairs(results, tournament):
+    matches = []
+    count = 0
+    while (count < len(results)):
+        # preventing rematches here
+        # get past matches
+        db, cursor = connect()
+        cursor.execute(
+            "select * from matches where tournament=%s;", (tournament,))
+        past_matches = cursor.fetchall()
+        db.close()
+
+        # past_matches: id, winner, loser, tournament
+        matches_not_allowed = []
+        print 'PAST MATCHES'
+        print past_matches
+        for match in past_matches:
+            matches_not_allowed.append((match[1], match[2]))
+        print 'MATCHES NOT ALLOWED'
+        print matches_not_allowed
+        # need to reverse lists as well
+
+        # results: id, tournament, name, wins_count, matches_count, bye
+        # players: (id, name)
+        players = []
+        for player in results:
+            players.append(player[0], player[2])
+
+        print 'LEN PLAYERS'
+        print len(players)
+        print 'MATCHES'
+        print matches
+
+        i = 0
+        while i < (len(players) - 1):
+            match = (players[0], players[i+1])
+
+            print 'MATCH'
+            print match
+            print 'MATCHES NOT ALLOWED'
+            print matches_not_allowed
+
+            rev_match = (match[1], match[0])
+
+            print 'REV MATCH'
+            print rev_match
+
+            if (match not in matches_not_allowed) and (rev_match not in matches_not_allowed):
+                print 'ALLOWED'
+                i += 1
+                # add valid match to list of matches
+                matches.appent
+                # remove players from list of picks
+            else:
+                print 'NOT ALLOWED, TRY ANOTHER'
+                i += 1
+
+
+
+        ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
+
+        matches.append(
+            # result[][0] is id
+            # result[][2] is name
+            (results[count][0], results[count][2],
+             results[count+1][0], results[count+1][2]))
+        count=count + 2
+    return matches
 
