@@ -167,6 +167,7 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
             raise ValueError(
                 "After one match, players with one win should be paired.")
     print "10. After one match, players with one win are properly paired."
+
     # start testing for multiple_tournaments
     deleteMatches(tournament)
     registerPlayer("King Trololo", tournament)
@@ -177,15 +178,51 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
             "After adding new player, there should be 9 players in"
             " tournament. Got {standings}".format(standings=len(standings)))
 
+    # first round
     [id1, id2, id3, id4, id5, id6, id7, id8, id9] = [row[0] for row in standings]
     reportMatch(id1, id2, tournament)
     reportMatch(id3, id4, tournament)
     reportMatch(id5, id6, tournament)
     reportMatch(id7, id8, tournament)
+
+    print 'giving player %s (id9) a bye for the first round.' % str(id9);
+    updatePlayerBye(id9)
+
+    # second round
     pairings = swissPairings(tournament)
     if len(pairings) != 4:
         raise ValueError(
             "For nine players, swissPairings should return 4 pairs. Got {pairs}".format(pairs=len(pairings)))
+    print "11. For nine players, swissPairings returned 4 pairs."
+
+    # id column p1 = 0
+    # id column p2 = 2
+    for pair in pairings:
+        reportMatch(pair[0], pair[2], tournament)
+
+    # third round
+    pairings = swissPairings(tournament)
+    for pair in pairings:
+        reportMatch(pair[0], pair[2], tournament)
+
+    # fourth round
+    pairings = swissPairings(tournament)
+    for pair in pairings:
+        reportMatch(pair[0], pair[2], tournament)
+
+    # check if there are 4 different players with a bye
+    standings4round = playerStandings(tournament)
+
+    byes_cnt = 0
+    for player in standings4round:
+        # player[5] is 'bye'
+        if player[5] == True:
+            byes_cnt += 1
+    print 'Number of byes: %s' % str(byes_cnt)
+    if byes_cnt != 4:
+        raise ValueError(
+            "For nine players, 4 rounds, number of byes should be 4. Got {byes}".format(byes=byes_cnt))
+    print "12. For nine players, 4 rounds, number of byes returned 4."
 
 
 

@@ -118,6 +118,9 @@ def swissPairings(tournament):
     player with an equal or nearly-equal win record, that is, a player adjacent
     to him or her in the standings.
 
+    If there are an odd number of players, randomly select one that has not
+    received a bye yet. Return only the 8 players in round, in 4 pairs.
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -129,9 +132,6 @@ def swissPairings(tournament):
     cursor.execute("select * from players_standings where tournament=%s;", (tournament,))
     results = cursor.fetchall()
     db.close()
-
-    print "AQUI"
-    print len(results)
 
     matches = []
     count = 0
@@ -156,34 +156,45 @@ def swissPairings(tournament):
         bottom_half = [result for result in results[:len(results)/2]]
         bye_winner = random.choice(bottom_half)
         # check if player has not received a bye
-        # if it has received a bye, pick another player
-
-        print "BYES"
-        print bye_winner
-        print bye_winner[5]
-
-        # if player has a bye, pick another
+        # if player has a bye (bye_winner[bye] is false), pick another
         while (bye_winner[5] != None):
-             bye_winner = random.choice(bottom_half)
+            bye_winner = random.choice(bottom_half)
 
         #insert bye record for player
-        db, cursor = connect()
+        updatePlayerBye(str(bye_winner[0]), True)
+        # db, cursor = connect()
+        # cursor.execute(
+        #     "update players set bye=True where id=%s", (str(bye_winner[0]),))
+        # db.commit()
+        # db.close()
+
+        # exclude from list bye'd player
+        print "BYE WINNER: %s" % str(bye_winner[0])
+        remaining_players = []
+        for player in results:
+            if player[0] != bye_winner[0]:
+                remaining_players.append(player)
+
+        # same sorting as above line 143, maybe refactor
+        while (count < len(remaining_players)):
+            matches.append(
+                # result[][0] is id
+                # result[][2] is name
+                (remaining_players[count][0], remaining_players[count][2],
+                 remaining_players[count+1][0], remaining_players[count+1][2]))
+            count = count + 2
+
+    return matches
+
+def updatePlayerBye(id, set=True):
+    #insert bye record for player
+    db, cursor = connect()
+    if id and set == True:
+        print 'giving player %s a bye.' % str(id)
         cursor.execute(
-            "update players set bye=True where id=%s", (str(bye_winner[0]),))
+            "update players set bye=True where id=%s", (str(id),))
         db.commit()
         db.close()
 
-        # set up matches, excluding bye'd player
-
-        # exclude from list bye'd player
-        # same sorting as above line 143
-
-        matches = ['I', 'DON\'T', 'KNOW']
-        print "PLAYERS and WINS"
-        for player in results:
-            print player
-        #ord
-
-
-    return matches
+    return
 
