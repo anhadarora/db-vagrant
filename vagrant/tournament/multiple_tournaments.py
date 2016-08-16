@@ -206,11 +206,8 @@ def setMatchesPairs(results, tournament):
     matches = []
     count = 0
 
-    # print 'RESULTS'
-    # print results
-
-
     # preventing rematches here
+
     # get past matches
     db, cursor = connect()
     cursor.execute(
@@ -220,51 +217,26 @@ def setMatchesPairs(results, tournament):
 
     # past_matches: id, winner, loser, tournament
     matches_not_allowed = []
-    # print 'PAST MATCHES'
-    # print past_matches
     for match in past_matches:
         matches_not_allowed.append((match[1], match[2]))
-    # print 'MATCHES NOT ALLOWED'
-    # print matches_not_allowed
-    # need to reverse lists as well
-
 
     # players: (id, name)
     players = []
     for player in results:
         players.append((player[0], player[2]))
 
-    # print 'LEN PLAYERS'
-    # print len(players)
-    # print 'MATCHES'
-    # print matches
-
     i = 1
     while len(players) > 0:
+
         match = (players[0], players[i])
 
-        # print 'LEN PLAYERS'
-        # print len(players)
-
-        # print 'MATCH'
-        # print match
-
+        # only the players ids
         match_ids = (players[0][0], players[i][0])
-        # print 'MATCH IDS'
-        # print match_ids
 
-        # print 'MATCHES NOT ALLOWED'
-        # print matches_not_allowed
-
+        # reversed order to check if not in past matches
         rev_match = (match_ids[1], match_ids[0])
 
-        # print 'REV MATCH'
-        # print rev_match
-
-        # print 'PLAYERS'
-        # print players
-
-        if (match in matches_not_allowed) or (rev_match in matches_not_allowed):
+        if (match_ids in matches_not_allowed) or (rev_match in matches_not_allowed):
             print 'NOT ALLOWED, TRY ANOTHER'
             i += 1
 
@@ -274,6 +246,7 @@ def setMatchesPairs(results, tournament):
             matches.append(match)
             # remove players from list of picks
             del players[0]
+            # -1 because just deleted 1
             del players[i-1]
             # restart match making
             i = 1
@@ -281,19 +254,10 @@ def setMatchesPairs(results, tournament):
     print '***** MATCHES *****'
     print matches
 
-
-
     ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
     formatted_matches = []
     for match in matches:
         formatted_matches.append((match[0][0], match[0][1], match[1][0], match[1][1]))
-
-
-    # matches.append(
-    #     # result[][0] is id
-    #     # result[][2] is name
-    #     (results[count][0], results[count][2],
-    #      results[count+1][0], results[count+1][2]))
 
     return formatted_matches
 
