@@ -201,71 +201,99 @@ def updatePlayerBye(id, set=True):
 
 
 def setMatchesPairs(results, tournament):
+    # results: id, tournament, name, wins_count, matches_count, bye
+
     matches = []
     count = 0
-    while (count < len(results)):
-        # preventing rematches here
-        # get past matches
-        db, cursor = connect()
-        cursor.execute(
-            "select * from matches where tournament=%s;", (tournament,))
-        past_matches = cursor.fetchall()
-        db.close()
 
-        # past_matches: id, winner, loser, tournament
-        matches_not_allowed = []
-        print 'PAST MATCHES'
-        print past_matches
-        for match in past_matches:
-            matches_not_allowed.append((match[1], match[2]))
-        print 'MATCHES NOT ALLOWED'
-        print matches_not_allowed
-        # need to reverse lists as well
-
-        # results: id, tournament, name, wins_count, matches_count, bye
-        # players: (id, name)
-        players = []
-        for player in results:
-            players.append(player[0], player[2])
-
-        print 'LEN PLAYERS'
-        print len(players)
-        print 'MATCHES'
-        print matches
-
-        i = 0
-        while i < (len(players) - 1):
-            match = (players[0], players[i+1])
-
-            print 'MATCH'
-            print match
-            print 'MATCHES NOT ALLOWED'
-            print matches_not_allowed
-
-            rev_match = (match[1], match[0])
-
-            print 'REV MATCH'
-            print rev_match
-
-            if (match not in matches_not_allowed) and (rev_match not in matches_not_allowed):
-                print 'ALLOWED'
-                i += 1
-                # add valid match to list of matches
-                matches.appent
-                # remove players from list of picks
-            else:
-                print 'NOT ALLOWED, TRY ANOTHER'
-                i += 1
+    # print 'RESULTS'
+    # print results
 
 
+    # preventing rematches here
+    # get past matches
+    db, cursor = connect()
+    cursor.execute(
+        "select * from matches where tournament=%s;", (tournament,))
+    past_matches = cursor.fetchall()
+    db.close()
 
-        ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
+    # past_matches: id, winner, loser, tournament
+    matches_not_allowed = []
+    # print 'PAST MATCHES'
+    # print past_matches
+    for match in past_matches:
+        matches_not_allowed.append((match[1], match[2]))
+    # print 'MATCHES NOT ALLOWED'
+    # print matches_not_allowed
+    # need to reverse lists as well
 
-        matches.append(
-            # result[][0] is id
-            # result[][2] is name
-            (results[count][0], results[count][2],
-             results[count+1][0], results[count+1][2]))
-        count=count + 2
-    return matches
+
+    # players: (id, name)
+    players = []
+    for player in results:
+        players.append((player[0], player[2]))
+
+    # print 'LEN PLAYERS'
+    # print len(players)
+    # print 'MATCHES'
+    # print matches
+
+    i = 1
+    while len(players) > 0:
+        match = (players[0], players[i])
+
+        # print 'LEN PLAYERS'
+        # print len(players)
+
+        # print 'MATCH'
+        # print match
+
+        match_ids = (players[0][0], players[i][0])
+        # print 'MATCH IDS'
+        # print match_ids
+
+        # print 'MATCHES NOT ALLOWED'
+        # print matches_not_allowed
+
+        rev_match = (match_ids[1], match_ids[0])
+
+        # print 'REV MATCH'
+        # print rev_match
+
+        # print 'PLAYERS'
+        # print players
+
+        if (match in matches_not_allowed) or (rev_match in matches_not_allowed):
+            print 'NOT ALLOWED, TRY ANOTHER'
+            i += 1
+
+        else:
+            print 'ALLOWED'
+            # add valid match to list of matches
+            matches.append(match)
+            # remove players from list of picks
+            del players[0]
+            del players[i-1]
+            # restart match making
+            i = 1
+
+    print '***** MATCHES *****'
+    print matches
+
+
+
+    ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
+    formatted_matches = []
+    for match in matches:
+        formatted_matches.append((match[0][0], match[0][1], match[1][0], match[1][1]))
+
+
+    # matches.append(
+    #     # result[][0] is id
+    #     # result[][2] is name
+    #     (results[count][0], results[count][2],
+    #      results[count+1][0], results[count+1][2]))
+
+    return formatted_matches
 
