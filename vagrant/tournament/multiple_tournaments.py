@@ -203,9 +203,6 @@ def updatePlayerBye(id, set=True):
 def setMatchesPairs(results, tournament):
     # results: id, tournament, name, wins_count, matches_count, bye
 
-    matches = []
-    count = 0
-
     # preventing rematches here
 
     # get past matches
@@ -215,18 +212,37 @@ def setMatchesPairs(results, tournament):
     past_matches = cursor.fetchall()
     db.close()
 
-    # past_matches: id, winner, loser, tournament
+    matches = []
+    count = 0
     matches_not_allowed = []
-    for match in past_matches:
-        matches_not_allowed.append((match[1], match[2]))
-
-    # players: (id, name)
     players = []
-    for player in results:
-        players.append((player[0], player[2]))
+
+    def resetMatchMaking():
+        count = 0
+
+        del matches[:]
+        del players[:]
+        del matches_not_allowed[:]
+
+        # past_matches: id, winner, loser, tournament
+        for match in past_matches:
+            matches_not_allowed.append((match[1], match[2]))
+
+        # players: (id, name)
+        for player in results:
+            players.append((player[0], player[2]))
+
+
+    resetMatchMaking()
 
     i = 1
     while len(players) > 0:
+
+        # print 'PLAYERS[i]'
+        # print players[i]
+
+        if not players[i]:
+            resetMatchMaking()
 
         match = (players[0], players[i])
 
@@ -250,9 +266,6 @@ def setMatchesPairs(results, tournament):
             del players[i-1]
             # restart match making
             i = 1
-
-    print '***** MATCHES *****'
-    print matches
 
     ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
     formatted_matches = []
