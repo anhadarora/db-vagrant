@@ -205,20 +205,18 @@ def setMatchesPairs(results, tournament):
 
     # preventing rematches here
 
-    # get past matches
+    matches = []
+    players = []
+    matches_not_allowed = []
+
+     # get past matches
     db, cursor = connect()
     cursor.execute(
         "select * from matches where tournament=%s;", (tournament,))
     past_matches = cursor.fetchall()
     db.close()
 
-    matches = []
-    count = 0
-    matches_not_allowed = []
-    players = []
-
     def resetMatchMaking():
-        count = 0
 
         del matches[:]
         del players[:]
@@ -232,40 +230,66 @@ def setMatchesPairs(results, tournament):
         for player in results:
             players.append((player[0], player[2]))
 
-
     resetMatchMaking()
 
     i = 1
-    while len(players) > 0:
+    # if the last pair match is not allowed, reset all matchmaking and
+    # reorder players[-j] and players[-j-1] positions for a next matchmaking
+    # [-j] allows for more than one reorder, moving up the list
+    j = 2
+    matches_set = False
+    while not matches_set:
 
-        # print 'PLAYERS[i]'
-        # print players[i]
+        print 'PLAYERS LENGTH'
+        print len(players)
 
-        if not players[i]:
+        # if there are only 2 players in list and the first match (i) was
+        # not allowed, last match is not allowed must reset
+        if (len(players) == 2) and (i == 2):
+            print 'LAST MATCH NOT ALLOWED. RESETTING.'
+            print 'PLAYERS LENGTH AAAAA'
+            print len(players)
             resetMatchMaking()
+            print 'ORIGINAL PLAYERS'
+            print players
+            print 'J'
+            print j
+            x = players[-j]
+            players[-j] = players[-j-1]
+            players[-j-1] = x
+            print 'REORDERED PLAYERS'
+            print players
+            j += 1
+            print 'PLAYERS LENGTH BBBBB'
+            print len(players)
+            i = 1
 
-        match = (players[0], players[i])
-
-        # only the players ids
-        match_ids = (players[0][0], players[i][0])
-
-        # reversed order to check if not in past matches
-        rev_match = (match_ids[1], match_ids[0])
-
-        if (match_ids in matches_not_allowed) or (rev_match in matches_not_allowed):
-            print 'NOT ALLOWED, TRY ANOTHER'
-            i += 1
+        if len(players) == 0:
+            print 'ACABOU'
+            matches_set = True
 
         else:
-            print 'ALLOWED'
-            # add valid match to list of matches
-            matches.append(match)
-            # remove players from list of picks
-            del players[0]
-            # -1 because just deleted 1
-            del players[i-1]
-            # restart match making
-            i = 1
+            # make match
+            match = (players[0], players[i])
+            # only the players ids, for formatting
+            match_ids = (players[0][0], players[i][0])
+            # reversed order to check if not in past matches
+            rev_match = (match_ids[1], match_ids[0])
+
+            if (match_ids in matches_not_allowed) or (rev_match in matches_not_allowed):
+                print 'NOT ALLOWED, TRY ANOTHER.'
+                i += 1
+
+            else:
+                print 'ALLOWED.'
+                # add valid match to list of matches
+                matches.append(match)
+                # remove players from list of picks
+                del players[0]
+                # -1 because just deleted 1
+                del players[i-1]
+                # restart match making
+                i = 1
 
     ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
     formatted_matches = []
