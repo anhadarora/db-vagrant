@@ -13,14 +13,14 @@ At `/vagrant/tournament/` there is a **`Single Tournament`** and **`Multiple Tou
 
 To run a **`Single Tournament`** test:
 - go to `/vagrant/tournament/`
-- run 'psql'
-- in psql run '\i tournament.sql'
+- run `psql`
+- in psql run `\i tournament.sql`
 - run `python tournament_test.py`
 
 To run a **`Multiple Tournament`** test:
 - go to `/vagrant/tournament/`
-- run 'psql'
-- in psql run '\i multiple_tournaments.sql'
+- run `psql`
+- in psql run `\i multiple_tournaments.sql`
 - run `python multiple_tournaments_test.py`
 
 >**OBS: The 'Multiple Tournament' is for the project extras:**
