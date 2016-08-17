@@ -9,7 +9,7 @@ To install and run Vagrant with configured VM:
 
 ### RUNNING PROJECT
 
-At `/vagrant/tournament/` there is a **`Single Tournament1** and **`Multiple Tournament`** (extras) project.
+At `/vagrant/tournament/` there is a **`Single Tournament`** and **`Multiple Tournament`** (extras) project.
 
 To run a **`Single Tournament`** test:
 - go to `/vagrant/tournament/`
