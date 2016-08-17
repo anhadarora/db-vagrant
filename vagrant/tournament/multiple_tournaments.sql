@@ -6,11 +6,6 @@ CREATE TABLE tournaments(
 	winner int references players(id)
 );
 
--- CREATE TABLE tournament_players(
--- 	tournament int references tournaments(id),
--- 	player int references players(id)
--- );
-
 -- to keep track of which tournament a match belongs to
 ALTER TABLE players ADD tournament int references tournaments(id);
 -- to keep track if user has received a bye
