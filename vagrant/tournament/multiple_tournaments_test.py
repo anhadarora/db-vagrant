@@ -195,7 +195,7 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     reportMatch(id5, id6, tournament)
     reportMatch(id7, id8, tournament)
 
-    print 'giving player %s (id9) a bye for the first round.' % str(id9)
+    # print 'giving player %s (id9) a bye for the first round.' % str(id9)
     updatePlayerBye(id9)
 
     # second round
