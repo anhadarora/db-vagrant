@@ -79,8 +79,6 @@ def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
                          "they have played any matches.")
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
-    # if len(standings[0]) != 4:
-    #     raise ValueError("Each playerStandings row should have four columns.")
     if len(standings[0]) != 6:
         raise ValueError("Each playerStandings row should have six columns.")
     [(tournament, id1, name1, wins1, matches1, bye),

@@ -57,9 +57,10 @@ def testStandingsBeforeMatches():
                          "they have played any matches.")
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
-    if len(standings[0]) != 4:
-        raise ValueError("Each playerStandings row should have four columns.")
-    [(id1, name1, wins1, matches1), (id2, name2, wins2, matches2)] = standings
+    if len(standings[0]) != 6:
+        raise ValueError("Each playerStandings row should have six columns.")
+    [(tournament, id1, name1, wins1, matches1, bye),
+    (touranment,id2, name2, wins2, matches2, bye)] = standings
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
@@ -84,23 +85,26 @@ def testReportMatches():
     reportMatch(id1, id2)
     reportMatch(id3, id4)
     standings = playerStandings()
-    for (i, n, w, m) in standings:
+    for (i, t, n, w, m, b) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
         if i in (id1, id3) and w != 1:
             raise ValueError("Each match winner should have one win recorded.")
         elif i in (id2, id4) and w != 0:
-            raise ValueError("Each match loser should have zero wins recorded.")
+            raise ValueError(
+                "Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
     deleteMatches()
     standings = playerStandings()
     if len(standings) != 4:
         raise ValueError("Match deletion should not change number of players in standings.")
-    for (i, n, w, m) in standings:
+    for (i, t, n, w, m, b) in standings:
         if m != 0:
-            raise ValueError("After deleting matches, players should have zero matches recorded.")
+            raise ValueError(
+                "After deleting matches, players should have zero matches recorded.")
         if w != 0:
-            raise ValueError("After deleting matches, players should have zero wins recorded.")
+            raise ValueError(
+                "After deleting matches, players should have zero wins recorded.")
     print "8. After match deletion, player standings are properly reset.\n9. Matches are properly deleted."
 
 def testPairings():
