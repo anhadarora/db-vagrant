@@ -7,20 +7,30 @@ from tournament import *
 import random
 
 
-def deleteMatches(tournament):
+def deleteMatches(tournament=None):
     """Remove all the match records from a particular tournament."""
 
     db, cursor = connect()
-    cursor.execute("delete from matches where tournament=%s;", (tournament,))
+
+    if tournament != None:
+        cursor.execute(
+            "delete from matches where tournament=%s;", (tournament,))
+    else:
+        cursor.execute("delete from matches")
     db.commit()
     db.close()
     return 'deleted all match records from database'
 
 
-def deletePlayers(tournament):
+def deletePlayers(tournament=None):
     """Remove all the player records from a particular tournament."""
     db, cursor = connect()
-    cursor.execute("delete from players where tournament=%s;", (tournament,))
+
+    if tournament != None:
+        cursor.execute(
+            "delete from players where tournament=%s;", (tournament,))
+    else:
+        cursor.execute("delete from players")
     db.commit()
     db.close()
     return 'deleted all player records from database'
@@ -36,12 +46,16 @@ def countPlayers(tournament):
     return results[0]
 
 
-def deleteTournaments():
-    """Remove all the tournament records from the database."""
+def deleteTournaments(tournament=None):
+    """Remove a the tournament record from the database."""
 
     db, cursor = connect()
-    cursor.execute(
-        "delete from tournaments where tournament=%s;", (tournament,))
+
+    if tournament != None:
+        cursor.execute(
+            "delete from tournaments where tournament=%s;", (tournament,))
+    else:
+        cursor.execute("delete from tournaments")
     db.commit()
     db.close()
     return 'deleted all match records from database'
@@ -95,7 +109,7 @@ def reportMatch(winner, loser, tournament):
 
 def playerStandings(tournament):
     """Returns a list of the players and their win records, sorted by wins,
-    	filtered by tournament.
+        filtered by tournament.
 
     First entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie, in a specific tournament.
@@ -194,11 +208,7 @@ def setMatchesPairs(results, tournament):
     matches_not_allowed = []
 
     # get past matches
-    db, cursor = connect()
-    cursor.execute(
-        "select * from matches where tournament=%s;", (tournament,))
-    past_matches = cursor.fetchall()
-    db.close()
+    past_matches = getPastMatchesTournament(tournament)
 
     def resetMatchMaking():
 
@@ -267,7 +277,18 @@ def setMatchesPairs(results, tournament):
     # MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
     formatted_matches = []
     for match in matches:
-        formatted_matches.append((match[0][0], match[0][1], match[1][0], match[1][1]))
+        formatted_matches.append(
+            (match[0][0], match[0][1], match[1][0], match[1][1]))
 
     return formatted_matches
 
+
+def getPastMatchesTournament(tournament):
+    # get past matches
+    db, cursor = connect()
+    cursor.execute(
+        "select * from matches where tournament=%s;", (tournament,))
+    past_matches = cursor.fetchall()
+    db.close()
+
+    return past_matches

@@ -14,6 +14,7 @@ from multiple_tournaments import *
 # The Tournament we will perform tests on
 DEFAULT_TOURNAMENT = 5
 
+
 def createTournamentsForTesting(DEFAULT_TOURNAMENT):
     db, cursor = connect()
     cursor.execute("select count(*) from tournaments;")
@@ -61,6 +62,7 @@ def testCount():
             "After deletion, countPlayers should return zero.")
     print "4. countPlayers() returns zero after registered players are deleted.\n5. Player records successfully deleted."
 
+
 def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
     """
     Test to ensure players are properly represented in standings prior
@@ -81,7 +83,8 @@ def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
     #     raise ValueError("Each playerStandings row should have four columns.")
     if len(standings[0]) != 6:
         raise ValueError("Each playerStandings row should have six columns.")
-    [(tournament, id1, name1, wins1, matches1, bye), (tournament, id2, name2, wins2, matches2, bye)] = standings
+    [(tournament, id1, name1, wins1, matches1, bye),
+     (tournament, id2, name2, wins2, matches2, bye)] = standings
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
@@ -89,6 +92,7 @@ def testStandingsBeforeMatches(tournament=DEFAULT_TOURNAMENT):
         raise ValueError("Registered players' names should appear in standings, "
                          "even if they have no matches played.")
     print "6. Newly registered players appear in the standings with no matches."
+
 
 def testReportMatches(tournament=DEFAULT_TOURNAMENT):
     """
@@ -112,18 +116,23 @@ def testReportMatches(tournament=DEFAULT_TOURNAMENT):
         if i in (id1, id3) and w != 1:
             raise ValueError("Each match winner should have one win recorded.")
         elif i in (id2, id4) and w != 0:
-            raise ValueError("Each match loser should have zero wins recorded.")
+            raise ValueError(
+                "Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
     deleteMatches(tournament)
     standings = playerStandings(tournament)
     if len(standings) != 4:
-        raise ValueError("Match deletion should not change number of players in standings.")
+        raise ValueError(
+            "Match deletion should not change number of players in standings.")
     for (i, t, n, w, m, b) in standings:
         if m != 0:
-            raise ValueError("After deleting matches, players should have zero matches recorded.")
+            raise ValueError(
+                "After deleting matches, players should have zero matches recorded.")
         if w != 0:
-            raise ValueError("After deleting matches, players should have zero wins recorded.")
+            raise ValueError(
+                "After deleting matches, players should have zero wins recorded.")
     print "8. After match deletion, player standings are properly reset.\n9. Matches are properly deleted."
+
 
 def testPairings(tournament=DEFAULT_TOURNAMENT):
     """
@@ -153,7 +162,8 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     if len(pairings) != 4:
         raise ValueError(
             "For eight players, swissPairings should return 4 pairs. Got {pairs}".format(pairs=len(pairings)))
-    [(pid1, pname1, pid2, pname2), (pid3, pname3, pid4, pname4), (pid5, pname5, pid6, pname6), (pid7, pname7, pid8, pname8)] = pairings
+    [(pid1, pname1, pid2, pname2), (pid3, pname3, pid4, pname4),
+     (pid5, pname5, pid6, pname6), (pid7, pname7, pid8, pname8)] = pairings
     possible_pairs = set([frozenset([id1, id3]), frozenset([id1, id5]),
                           frozenset([id1, id7]), frozenset([id3, id5]),
                           frozenset([id3, id7]), frozenset([id5, id7]),
@@ -161,7 +171,8 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
                           frozenset([id2, id8]), frozenset([id4, id6]),
                           frozenset([id4, id8]), frozenset([id6, id8])
                           ])
-    actual_pairs = set([frozenset([pid1, pid2]), frozenset([pid3, pid4]), frozenset([pid5, pid6]), frozenset([pid7, pid8])])
+    actual_pairs = set([frozenset([pid1, pid2]), frozenset(
+        [pid3, pid4]), frozenset([pid5, pid6]), frozenset([pid7, pid8])])
     for pair in actual_pairs:
         if pair not in possible_pairs:
             raise ValueError(
@@ -179,13 +190,14 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
             " tournament. Got {standings}".format(standings=len(standings)))
 
     # first round
-    [id1, id2, id3, id4, id5, id6, id7, id8, id9] = [row[0] for row in standings]
+    [id1, id2, id3, id4, id5, id6, id7, id8, id9] = [row[0]
+                                                     for row in standings]
     reportMatch(id1, id2, tournament)
     reportMatch(id3, id4, tournament)
     reportMatch(id5, id6, tournament)
     reportMatch(id7, id8, tournament)
 
-    print 'giving player %s (id9) a bye for the first round.' % str(id9);
+    print 'giving player %s (id9) a bye for the first round.' % str(id9)
     updatePlayerBye(id9)
 
     # second round
@@ -226,20 +238,43 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
 
     return
 
-
-def testNoRematches(tournament):
-    i = 0
-    for i < 100:
-
-        i++
-
-"13. For 100 tournaments with 9 players, with random byes (so some randomness in matchmaking)"
-    " no rematches found in a tournament"
+# I'm sure there must be a more elegant way to test if there aren't rematches lol...
+# What I'm doing is running a 100 matches and checking if any had a rematch
+# I have run up to 1000 tournaments in a 'testNoRematches' without any
+# rematches
 
 
+def testNoRematches():
 
+    i = 1
+    rematches = False
+    while i < 101:
+        tournament_name = 'Tournament %s' % str(i)
+        print tournament_name
+        createTournament(tournament_name)
 
+        testPairings(i)
+        past_matches = getPastMatchesTournament(i)
 
+        formatted_matches = []
+        for match in past_matches:
+            m = (match[1], match[2])
+            rev_m = (match[2], match[1])
+            formatted_matches.append(m)
+            formatted_matches.append(rev_m)
+
+        if not (len(set(formatted_matches)) == len(formatted_matches)):
+            rematches = True
+
+        i += 1
+
+    if rematches:
+        raise ValueError(
+            "For 100 tournaments with 9 players, there should be no rematch.")
+    else:
+        msg = ("13. For 100 tournaments with 9 players, with random byes (so"
+               " some randomness in matchmaking) no rematches found in any tournament")
+        print msg
 
 if __name__ == '__main__':
     createTournamentsForTesting(DEFAULT_TOURNAMENT)
@@ -247,4 +282,5 @@ if __name__ == '__main__':
     testStandingsBeforeMatches()
     testReportMatches()
     testPairings()
+    testNoRematches()
     print "Success!  All tests pass!"
