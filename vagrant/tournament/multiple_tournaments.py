@@ -135,6 +135,9 @@ def swissPairings(tournament):
         id2: the second player's unique id
         name2: the second player's name
     """
+
+    matches = []
+
     db, cursor = connect()
     cursor.execute(
         "select * from players_standings where tournament=%s;", (tournament,))
@@ -144,39 +147,22 @@ def swissPairings(tournament):
     # If number of players is odd, must give a 'bye' to one player.
     # A player should not receive more than one 'bye' in a tournament.
     # A bye counts as a free win.
-    matches = []
     if len(results) % 2 == 0:
         matches = setMatchesPairs(results, tournament)
-        # while (count < len(results)):
-        #     matches.append(
-        #         # result[][0] is id
-        #         # result[][2] is name
-        #         (results[count][0], results[count][2],
-        #          results[count+1][0], results[count+1][2]))
-        #     count = count + 2
     else:
-        # need to calculate the top half
-        # randomly select a winner from bottom half
+        # randomly select a bye winner from bottom half
         # can't be someone who's won a bye before
-        print "ODD NUMBER OF PLAYERS. WILL RANDOM SELECT ONE FROM BOTTOM HALF."
-
         bottom_half = [result for result in results[:len(results)/2]]
         bye_winner = random.choice(bottom_half)
         # check if player has not received a bye
-        # if player has a bye (bye_winner[bye] is false), pick another
+        # if player has a bye (bye_winner[bye] is True), pick another
         while (bye_winner[5] != None):
             bye_winner = random.choice(bottom_half)
 
-        # insert bye record for player
+        # record bye given
         updatePlayerBye(str(bye_winner[0]), True)
-        # db, cursor = connect()
-        # cursor.execute(
-        #     "update players set bye=True where id=%s", (str(bye_winner[0]),))
-        # db.commit()
-        # db.close()
 
         # exclude from list bye'd player
-        print "BYE WINNER: %s" % str(bye_winner[0])
         remaining_players = []
         for player in results:
             if player[0] != bye_winner[0]:
@@ -191,11 +177,10 @@ def updatePlayerBye(id, set=True):
     # insert bye record for player
     db, cursor = connect()
     if id and set == True:
-        print 'giving player %s a bye.' % str(id)
         cursor.execute(
             "update players set bye=True where id=%s", (str(id),))
         db.commit()
-        db.close()
+    db.close()
 
     return
 
@@ -203,13 +188,12 @@ def updatePlayerBye(id, set=True):
 def setMatchesPairs(results, tournament):
     # results: id, tournament, name, wins_count, matches_count, bye
 
-    # preventing rematches here
-
     matches = []
     players = []
+    # matches_not_allowed are past matches, so no rematches
     matches_not_allowed = []
 
-     # get past matches
+    # get past matches
     db, cursor = connect()
     cursor.execute(
         "select * from matches where tournament=%s;", (tournament,))
@@ -233,65 +217,54 @@ def setMatchesPairs(results, tournament):
     resetMatchMaking()
 
     i = 1
-    # if the last pair match is not allowed, reset all matchmaking and
-    # reorder players[-j] and players[-j-1] positions for a next matchmaking
-    # [-j] allows for more than one reorder, moving up the list
+    # If the last pair match is not allowed, reset all matchmaking and
+    # reorder players[-j] and players[-j-1] positions for a next matchmaking try.
+    # Incrementing [-j] allows for more than one reorder, moving up the list.
     j = 2
     matches_set = False
     while not matches_set:
 
-        print 'PLAYERS LENGTH'
-        print len(players)
-
-        # if there are only 2 players in list and the first match (i) was
-        # not allowed, last match is not allowed must reset
+        # If there are only 2 players in list and
+        # the first match (players[0], players[i]) was not allowed (i == 1),
+        # then last match is not allowed and matchmaking must reset
         if (len(players) == 2) and (i == 2):
-            print 'LAST MATCH NOT ALLOWED. RESETTING.'
-            print 'PLAYERS LENGTH AAAAA'
-            print len(players)
+            # resets lists
             resetMatchMaking()
-            print 'ORIGINAL PLAYERS'
-            print players
-            print 'J'
-            print j
+            # reorder a pair of positions for a new matchmaking try
             x = players[-j]
             players[-j] = players[-j-1]
             players[-j-1] = x
-            print 'REORDERED PLAYERS'
-            print players
             j += 1
-            print 'PLAYERS LENGTH BBBBB'
-            print len(players)
             i = 1
 
+        # if list of players is empty, all players have been assigned a match
         if len(players) == 0:
-            print 'ACABOU'
             matches_set = True
 
         else:
             # make match
             match = (players[0], players[i])
-            # only the players ids, for formatting
+            # only players ids, for formatting
             match_ids = (players[0][0], players[i][0])
-            # reversed order to check if not in past matches
+            # reversed order also, to check if match not in past matches
             rev_match = (match_ids[1], match_ids[0])
 
+            # if the match has happened before it is not allowed
             if (match_ids in matches_not_allowed) or (rev_match in matches_not_allowed):
-                print 'NOT ALLOWED, TRY ANOTHER.'
                 i += 1
 
+            # else, match is allowed
             else:
-                print 'ALLOWED.'
-                # add valid match to list of matches
+                # add match to list of matches
                 matches.append(match)
-                # remove players from list of picks
+                # remove players from list to pair in match
                 del players[0]
                 # -1 because just deleted 1
                 del players[i-1]
                 # restart match making
                 i = 1
 
-    ### MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
+    # MUST RETURN TUPLES (ID, NAME, ID, NAME) FOR MATCHES
     formatted_matches = []
     for match in matches:
         formatted_matches.append((match[0][0], match[0][1], match[1][0], match[1][1]))

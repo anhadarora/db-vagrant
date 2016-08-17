@@ -172,7 +172,7 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
     deleteMatches(tournament)
     registerPlayer("King Trololo", tournament)
     standings = playerStandings(tournament)
-    print 'length of standings: %d' % len(standings)
+    # print 'length of standings: %d' % len(standings)
     if len(standings) != 9:
         raise ValueError(
             "After adding new player, there should be 9 players in"
@@ -218,11 +218,23 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
         # player[5] is 'bye'
         if player[5] == True:
             byes_cnt += 1
-    print 'Number of byes: %s' % str(byes_cnt)
+
     if byes_cnt != 4:
         raise ValueError(
             "For nine players, 4 rounds, number of byes should be 4. Got {byes}".format(byes=byes_cnt))
     print "12. For nine players, 4 rounds, number of byes returned 4."
+
+    return
+
+
+def testNoRematches(tournament):
+    i = 0
+    for i < 100:
+
+        i++
+
+"13. For 100 tournaments with 9 players, with random byes (so some randomness in matchmaking)"
+    " no rematches found in a tournament"
 
 
 
