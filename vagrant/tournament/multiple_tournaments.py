@@ -3,8 +3,19 @@
 # multiple_tournaments.py -- manages Swiss-system tournaments
 #
 
-from tournament import *
 import random
+import psycopg2
+
+
+def connect(dbname='tournament'):
+    """Connect to the PostgreSQL database.  Returns a database connection."""
+
+    try:
+        db = psycopg2.connect("dbname=%s" % dbname)
+        cursor = db.cursor()
+        return db, cursor
+    except:
+        raise IOError('Error connecting to database %s' % dbname)
 
 
 def deleteMatches(tournament=None):
@@ -152,11 +163,7 @@ def swissPairings(tournament):
 
     matches = []
 
-    db, cursor = connect()
-    cursor.execute(
-        "select * from players_standings where tournament=%s;", (tournament,))
-    results = cursor.fetchall()
-    db.close()
+    results = playerStandings(tournament)
 
     # If number of players is odd, must give a 'bye' to one player.
     # A player should not receive more than one 'bye' in a tournament.
