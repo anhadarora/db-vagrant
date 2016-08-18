@@ -1,0 +1,3 @@
+- create gitignore for the rest of the project
+
+- revert tournament test to original

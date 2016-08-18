@@ -240,8 +240,6 @@ def testPairings(tournament=DEFAULT_TOURNAMENT):
 # What I'm doing is running a 100 matches and checking if any had a rematch
 # I have run up to 1000 tournaments in a 'testNoRematches' without any
 # rematches
-
-
 def testNoRematches():
 
     i = 1
