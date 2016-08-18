@@ -6,7 +6,7 @@ To run a **`Multiple Tournament`** test:
 - first, in psql run `\i multiple_tournaments.sql`
 - then, run `python multiple_tournaments_test.py`
 
->**OBS: The 'Multiple Tournament' is for the project extras:**
+>**OBS: Tests 11, 12 and 13 are for 'Multiple Tournament' extras:**
 
 >1. *Support more than one tournament in the database, so matches do not have to be deleted between tournaments.*
 >2. *Prevent rematches between players.*
